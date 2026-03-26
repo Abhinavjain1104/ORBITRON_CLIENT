@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import { useCounter } from "../hooks/useCounter";
+import { useEffect, useRef } from "react";
 
 function StatCard({ value, suffix, label, isActive }) {
   const num = useCounter(value, 1500, isActive);
@@ -15,11 +16,24 @@ function StatCard({ value, suffix, label, isActive }) {
 }
 
 function Home() {
-  const [heroRef,     heroVisible]     = useScrollAnimation(0.1);
-  const [statsRef,    statsVisible]    = useScrollAnimation(0.3);
-  const [aboutRef,    aboutVisible]    = useScrollAnimation(0.2);
+  const parallaxRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (parallaxRef.current) {
+        // Move bg at 40% of scroll speed — image stays under cursor
+        parallaxRef.current.style.transform = `translateY(${window.scrollY * 0.4}px)`;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const [heroRef, heroVisible] = useScrollAnimation(0.1);
+  const [statsRef, statsVisible] = useScrollAnimation(0.3);
+  const [aboutRef, aboutVisible] = useScrollAnimation(0.2);
   const [productsRef, productsVisible] = useScrollAnimation(0.1);
-  const [ctaRef,      ctaVisible]      = useScrollAnimation(0.2);
+  const [ctaRef, ctaVisible] = useScrollAnimation(0.2);
 
   return (
     <div>
@@ -28,15 +42,24 @@ function Home() {
         className="diagonal-bottom relative flex flex-col justify-center items-center text-center text-white min-h-screen"
         style={{ paddingTop: "90px", position: "relative" }}
       >
-        {/* Fixed parallax background */}
+        {/* JS Parallax background */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: "url('https://images.unsplash.com/photo-1581587583344-e79475da1ec6?auto=format&fit=crop&w=1800&q=85')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
+          overflow: "hidden",
           zIndex: 0,
-        }} />
+        }}>
+          <div
+            ref={parallaxRef}
+            style={{
+              position: "absolute",
+              top: "-30%", left: 0, right: 0, bottom: "-30%",
+              backgroundImage: "url('https://images.unsplash.com/photo-1581587583344-e79475da1ec6?auto=format&fit=crop&w=1800&q=85')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              willChange: "transform",
+            }}
+          />
+        </div>
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(145deg, rgba(22,30,40,0.92) 0%, rgba(34,44,53,0.88) 60%, rgba(54,66,79,0.82) 100%)",
@@ -110,19 +133,21 @@ function Home() {
               style={{ color: "var(--brown)" }}>
               Learn More About Us
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="5" y1="12" x2="19" y2="12"/>
-                <polyline points="12 5 19 12 12 19"/>
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
               </svg>
             </NavLink>
 
           </div>
           <div className={`reveal-right ${aboutVisible ? "visible" : ""} relative hidden md:block`}>
-            <div className="w-full h-72 rounded-3xl"
-              style={{ background: "linear-gradient(135deg, var(--wheat-light), var(--wheat))", opacity: 0.35 }} />
-            <div className="absolute inset-6 rounded-2xl border-2"
-              style={{ borderColor: "var(--wheat)", opacity: 0.5 }} />
-            <div className="absolute inset-0 flex items-center justify-center"
-              style={{ fontSize: "80px", opacity: 0.4 }}>🌾</div>
+            <div className="w-full rounded-3xl overflow-hidden shadow-xl"
+              style={{ border: "3px solid var(--wheat)" }}>
+              <img
+                src="/aboutog.jpeg"
+                alt="Orbitron Global LLP Office"
+                className="w-full h-auto object-contain"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -164,8 +189,8 @@ function Home() {
                   <span className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--wheat)" }}>
                     View All Products
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="5" y1="12" x2="19" y2="12"/>
-                      <polyline points="12 5 19 12 12 19"/>
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
                     </svg>
                   </span>
                 </div>

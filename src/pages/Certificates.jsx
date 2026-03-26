@@ -41,7 +41,7 @@ const certs = [
   },
   {
     name: "APEDA Registration",
-    image: "/certificates/apeda.jpeg",
+    image: "/certificates/apeda.jpg",
     full: "RCMC/APEDA/16620/2025-2026",
     badge: "APEDA",
     color: "#f0fdf4",
@@ -70,7 +70,7 @@ const certs = [
 function Certificates() {
   const [lightbox, setLightbox] = useState(null);
   const [headerRef, headerVisible] = useScrollAnimation(0.2);
-  const [certsRef,  certsVisible]  = useScrollAnimation(0.1);
+  const [certsRef, certsVisible] = useScrollAnimation(0.1);
 
   return (
     <div>

@@ -1,11 +1,47 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import emailjs from "@emailjs/browser";
+
+// ── EmailJS credentials ─────────────────────────────────────────────────────
+// Replace these with your actual values from https://www.emailjs.com/
+const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || "YOUR_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
+const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  || "YOUR_PUBLIC_KEY";
+// ────────────────────────────────────────────────────────────────────────────
 
 function Contact() {
+  const formRef = useRef();
   const [form, setForm] = useState({ name: "", email: "", company: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const submit = (e) => { e.preventDefault(); setSent(true); };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const templateParams = {
+        name: form.name,
+        email: form.email,
+        company: form.company || "Not provided",
+        message: form.message,
+      };
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        { publicKey: EMAILJS_PUBLIC_KEY }
+      );
+      setSent(true);
+    } catch (err) {
+      console.error("EmailJS error:", err);
+      setError("Something went wrong. Please try emailing us directly at contact@orbitronglobal.com");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const inputClass = "w-full p-4 rounded-xl border text-sm outline-none transition-all duration-200 bg-white";
   const inputStyle = { border: "1.5px solid #e0d9cf", fontFamily: "DM Sans, sans-serif" };
@@ -75,17 +111,27 @@ function Contact() {
           <div>
             {sent ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-10 rounded-3xl"
-                style={{ background: "var(--wheat-light)" }}>
-                <div className="text-5xl mb-4">✅</div>
-                <h3 className="font-display text-2xl font-bold mb-2" style={{ color: "var(--slate-dark)" }}>
-                  Message Sent!
+                style={{ background: "var(--slate-dark)" }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+                  style={{ background: "linear-gradient(135deg, var(--wheat-light), var(--wheat))" }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--slate-dark)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <h3 className="font-display text-2xl font-bold mb-3 text-white">
+                  Message Received!
                 </h3>
-                <p className="text-gray-600 text-sm">
-                  Thank you for reaching out. We will get back to you within 24 hours.
+                <p className="text-sm leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  Thank you for reaching out to Orbitron Global LLP.<br />
+                  Our team will respond within <span style={{ color: "var(--wheat)" }}>24 hours</span>.
                 </p>
+                <div className="flex items-center gap-2 text-xs px-4 py-2 rounded-full"
+                  style={{ background: "rgba(200,169,110,0.15)", border: "1px solid rgba(200,169,110,0.3)", color: "var(--wheat)" }}>
+                  ✉️ &nbsp;Sent to contact@orbitronglobal.com
+                </div>
               </div>
             ) : (
-              <form onSubmit={submit} className="flex flex-col gap-4">
+              <form ref={formRef} onSubmit={submit} className="flex flex-col gap-4">
                 <input name="name" placeholder="Your Name *" value={form.name} onChange={handle}
                   required className={inputClass} style={inputStyle} />
                 <input name="email" type="email" placeholder="Email Address *" value={form.email}
@@ -95,11 +141,14 @@ function Contact() {
                 <textarea name="message" placeholder="Your Message or Inquiry *" value={form.message}
                   onChange={handle} required rows={5} className={inputClass}
                   style={{ ...inputStyle, resize: "vertical" }} />
-                <button type="submit"
+                <button type="submit" disabled={loading}
                   className="w-full py-4 rounded-full font-semibold text-sm transition-all duration-200 mt-2"
-                  style={{ background: "var(--slate-dark)", color: "white" }}>
-                  Submit Inquiry
+                  style={{ background: loading ? "#888" : "var(--slate-dark)", color: "white", cursor: loading ? "not-allowed" : "pointer" }}>
+                  {loading ? "Sending…" : "Submit Inquiry"}
                 </button>
+                {error && (
+                  <p className="text-red-500 text-xs text-center mt-1">{error}</p>
+                )}
               </form>
             )}
           </div>
