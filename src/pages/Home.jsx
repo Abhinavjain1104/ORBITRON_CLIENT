@@ -139,16 +139,6 @@ function Home() {
             </NavLink>
 
           </div>
-          <div className={`reveal-right ${aboutVisible ? "visible" : ""} relative hidden md:block`}>
-            <div className="w-full rounded-3xl overflow-hidden shadow-xl"
-              style={{ border: "3px solid var(--wheat)" }}>
-              <img
-                src="/aboutog.jpeg"
-                alt="Orbitron Global LLP Office"
-                className="w-full h-auto object-contain"
-              />
-            </div>
-          </div>
         </div>
       </section>
 

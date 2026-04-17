@@ -1,20 +1,12 @@
-import { useState, useRef } from "react";
-import emailjs from "@emailjs/browser";
-
-// ── EmailJS credentials ─────────────────────────────────────────────────────
-// Replace these with your actual values from https://www.emailjs.com/
-const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  || "YOUR_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
-const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  || "YOUR_PUBLIC_KEY";
-// ────────────────────────────────────────────────────────────────────────────
+import { useState } from "react";
 
 function Contact() {
-  const formRef = useRef();
   const [form, setForm] = useState({ name: "", email: "", company: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Update form state when user types in any field
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
@@ -22,26 +14,26 @@ function Contact() {
     setLoading(true);
     setError("");
     try {
-      const templateParams = {
-        name: form.name,
-        email: form.email,
-        company: form.company || "Not provided",
-        message: form.message,
-      };
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        { publicKey: EMAILJS_PUBLIC_KEY }
-      );
+      const res = await fetch("http://localhost:8000/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: `${form.company ? "Company: " + form.company + "\n" : ""}${form.message}`,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Server error");
       setSent(true);
     } catch (err) {
-      console.error("EmailJS error:", err);
+      console.error("Submit error:", err);
       setError("Something went wrong. Please try emailing us directly at contact@orbitronglobal.com");
     } finally {
       setLoading(false);
     }
   };
+
 
   const inputClass = "w-full p-4 rounded-xl border text-sm outline-none transition-all duration-200 bg-white";
   const inputStyle = { border: "1.5px solid #e0d9cf", fontFamily: "DM Sans, sans-serif" };
@@ -131,7 +123,7 @@ function Contact() {
                 </div>
               </div>
             ) : (
-              <form ref={formRef} onSubmit={submit} className="flex flex-col gap-4">
+              <form onSubmit={submit} className="flex flex-col gap-4">
                 <input name="name" placeholder="Your Name *" value={form.name} onChange={handle}
                   required className={inputClass} style={inputStyle} />
                 <input name="email" type="email" placeholder="Email Address *" value={form.email}
